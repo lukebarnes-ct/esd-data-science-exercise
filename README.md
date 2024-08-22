@@ -26,7 +26,7 @@ In this part, you will:
 - Create visualizations to plot the various time series data. Use your discretion to decide which plots best represent the data.
 
 ### **Variables available in `data.csv`**:
-- **GDP**: [Real Gross domestic expenditure (sa)](https://www.resbank.co.za/en/home/what-we-do/statistics/releases/economic-and-financial-data-for-south-africa)
+- **GDP**: [GDP at market prices (constant, sa)](https://www.resbank.co.za/en/home/what-we-do/statistics/releases/economic-and-financial-data-for-south-africa)
 - **ConsumerPrices**: [Consumer Prices (nsa)](https://www.resbank.co.za/en/home/what-we-do/statistics/releases/economic-and-financial-data-for-south-africa)
 - **UNEM**: [Unemployment rate (sa)](https://www.resbank.co.za/en/home/what-we-do/statistics/releases/economic-and-financial-data-for-south-africa)
 - **GFCF**: [Gross fixed capital formation (sa)](https://www.resbank.co.za/en/home/what-we-do/statistics/releases/economic-and-financial-data-for-south-africa)
@@ -51,7 +51,7 @@ This section is also open-ended to allow you to demonstrate your modeling and an
 
 The data sources linked below correspond to the variables in the dataset:
 
-- [Real Gross domestic expenditure (sa)](https://www.resbank.co.za/en/home/what-we-do/statistics/releases/economic-and-financial-data-for-south-africa)
+- [GDP at market prices (constant, sa)](https://www.resbank.co.za/en/home/what-we-do/statistics/releases/economic-and-financial-data-for-south-africa)
 - [Consumer Prices (nsa)](https://www.resbank.co.za/en/home/what-we-do/statistics/releases/economic-and-financial-data-for-south-africa)
 - [Unemployment rate (sa)](https://www.resbank.co.za/en/home/what-we-do/statistics/releases/economic-and-financial-data-for-south-africa)
 - [Gross fixed capital formation (sa)](https://www.resbank.co.za/en/home/what-we-do/statistics/releases/economic-and-financial-data-for-south-africa)
