@@ -1,0 +1,209 @@
+---
+title: "ESD Data Science Graduate Programme Exercise"
+output: pdf_document
+---
+
+# Part One
+
+We are interested in creating statistical models that will predict GDP, using the explanatory variables provided in the data set (Consumer Prices, Unemployment Rate (UNEM), Gross Fixed Capital Formation (GFCF), Final Consumption Expenditure by General Government (GovExp) and Final Consumption Expenditure by Household (HouseExp). Before this is done, Exploratory Data Analysis is conducted on the provided data set.
+
+## Exploratory Data Analysis
+
+Exploration of the data set informs us that the data needs to be cleaned before it can be used to generate summary statistics, create visualizations and perform model training. Examples of miscellaneous errors in the data are:
+
+-   Missing Values in each of the Variables
+
+-   The addition of zeroes onto the end of selected values in the data for each of the variables
+
+These errors are cleaned and handled before EDA is continued below.
+
+```{r include=FALSE}
+
+# Load Libraries for use
+
+library(ggplot2)
+library(dplyr)
+library(imputeTS)
+library(vtable)
+library(GGally)
+library(modelsummary)
+
+# Load the Dataset
+
+data = read.csv("data/data.csv")
+
+# See that each variable has a NA value
+# See that the max for each variable is two degrees greater than even   the 3rd Quartile Statistics
+
+summary(data)
+
+# Impute Missing Values with Linear Weighted Moving Average
+
+newData = na_ma(data, k = 2, weighting = "linear")
+
+# Clean Data for added two zeroes on single values in each variable
+
+maxGDP = max(newData$GDP)
+maxGFCF = max(newData$GFCF)
+maxUNEM = max(newData$UNEM)
+maxConsP = max(newData$ConsumerPrices)
+maxGovExp = max(newData$GovExp)
+maxHE = max(newData$HouseExp)
+
+newData$GDP[newData$GDP >= maxGDP] = maxGDP/100
+newData$GFCF[newData$GFCF >= maxGFCF] = maxGFCF/100
+newData$UNEM[newData$UNEM >= maxUNEM] = maxUNEM/100
+newData$ConsumerPrices[newData$ConsumerPrices >= maxConsP] = maxConsP/100
+newData$GovExp[newData$GovExp >= maxGovExp] = maxGovExp/100
+newData$HouseExp[newData$HouseExp >= maxHE] = maxHE/100
+
+# Check Summary Statistics to see if Data is clean and correctly handled
+
+summary(newData)
+
+```
+
+```{r echo=FALSE}
+
+# Print Table of Summary Statistics
+
+st(newData)
+
+```
+
+The Summary Statistics Table of the data above shows that the errors and missing values that were discovered in the data have been handled.
+
+### Time Series Visualisations
+
+```{r}
+
+# Visualisations of the Data
+
+## Time Series Visualisations
+
+newData$Date = as.Date(newData$Date)
+
+colour1 = c("GDP" = "black", "HouseExp" = "red")
+
+ggplot(newData, aes(x = Date)) + 
+  geom_line(aes(y = GDP, col = "GDP"), linewidth = 2) +
+  geom_line(aes(y = HouseExp, col = "HouseExp"), linewidth = 2) +
+  labs(y = "R Million",
+       color = "Legend") +
+  scale_color_manual(values = colour1) +
+  theme_light() 
+
+colour2 = c("GFCF" = "blue", "GovExp" = "darkorange")
+
+ggplot(newData, aes(x = Date)) + 
+  geom_line(aes(y = GFCF, col = "GFCF"), linewidth = 2) +
+  geom_line(aes(y = GovExp, col = "GovExp"), linewidth = 2) +
+  labs(y = "R Million",
+       color = "Legend") +
+  scale_color_manual(values = colour2) +
+  theme_light() 
+
+colour3 = c("Unemployment Rate (%)" = "darkorchid", "ConsumerPrices" = "darkgreen")
+
+ggplot(newData, aes(x = Date)) + 
+  geom_line(aes(y = UNEM, col = "Unemployment Rate (%)"), linewidth = 2) +
+  geom_line(aes(y = ConsumerPrices, col = "ConsumerPrices"), linewidth = 2) +
+  labs(y = "",
+       color = "Legend") +
+  scale_color_manual(values = colour3) +
+  theme_light() 
+
+```
+
+### Comparative Exploratory Data Analysis
+
+```{r echo=FALSE}
+
+# Scatter Plots and Correlations to compare the variables as pairs
+# Use GGPairs to get the comparison plot altogether 
+
+pairsData = newData[, -1]
+ggpairs(pairsData)
+```
+
+The Figure above gives unique insight into the relationships that exist between all the explanatory variables and their relationship with GDP. GDP has an almost perfect positive linear relationship with each of the variables, with the exception of the unemployment rate. As GDP increases, all the other variables increase too. Unemployment is seemingly more complicated as the data suggests that there is not a linear relationship between itself and GDP. The unemployment rate grows and decreases as GDP grows, which initially suggests that it is not a good predictor for the GDP of South Africa. It would be incredibly interesting to read the research on this. This relationship with GDP seemingly filters into the relationship between unemployment and the other explanatory variables. The scatter of their points on each of the unemployment axis suggests that a linear relationship is not feasible between the unemployment rate and the other variables. The relationship between the GFCF and the other explanatory variables appears to be relatively interesting. The relationship appears to be linear up until a certain GFCF value where non-linearity is clearly established with the arc of the values.
+
+# Part Two
+
+## Model Training
+
+Two types of regression models will be trained on the data and evaluated on their performance. A simple linear regression model (with variants) and a Regression Neural Network model (with Variants).
+
+```{r include=FALSE}
+
+# Split Data into Training and Test Data
+
+set.seed(2024)
+
+mod_Data = newData[, -1]
+
+mod_Data$id = 1:nrow(mod_Data)
+
+# Split 75% Training Data and 25% Test Data
+# Not ideal for such a small sample set
+
+trainData = mod_Data %>% sample_frac(0.75)
+testData  = anti_join(mod_Data, trainData, by = 'id')
+
+```
+
+#### Simple Linear Regression Model
+
+```{r include=FALSE}
+
+# Simple Linear Regression Model
+
+SLR_Data_Train = trainData[, -7]
+SLR_Data_Test = testData[, -7]
+
+## Build Model with all of the explanatory variables
+
+SLR_Mod1 = lm(GDP ~., data = SLR_Data_Train)
+summary(SLR_Mod1)
+
+```
+
+```{r echo=FALSE}
+
+# Output Model Summary 
+
+modelsummary(SLR_Mod1, output = "markdown",
+             statistic = c("s.e. = {std.error}",
+                           "p = {p.value}"))
+```
+
+If we fit a simple linear regression model to the data using all the explanatory variables, the table above gives the output of the model and we can infer certain things about both the data and the model. The regression coefficients tell us the impact of a unit change in the explanatory variables on the GDP. A unit change in the Government Expenditure results in a 0.476 change in the GDP. Alternatively, a unit change in the unemployment rate results in a 7227.716 change in the GDP. The R\^2 value informs us on how well the model predicts GDP in sample. At 99.8%, this suggests that the model is a great fit and the explanatory variables predict GDP well. The p-values suggest that some of the explanatory variables should not be included in the model, namely the Consumer Price Index. Step-wise Regression is implemented to determine the optimal number of explanatory variables to use in the model. Some of the variables might not have a great impact on improving the fit of the model to the data.
+
+```{r include=FALSE}
+
+# Stepwise Regression to determine the necessary explanatory variables to use to predict GDP
+
+stepMod_SLR = step(SLR_Mod1, direction = "both", trace = 1)
+modelsummary(stepMod_SLR, output = "markdown",
+             statistic = c("s.e. = {std.error}",
+                           "p = {p.value}"))
+```
+
+Step-wise regression shows that one explanatory variable can be removed from the model (ConsumerPrices), while maintaining the same fit of model (as seen in the R^2\ values\ and\ adjusted\ R\^2\ values^ remaining the same). The resultant fit of the simple linear regression model suggest that a more complicated model is not necessary as the trade-off in complexity and efficiency would not greatly improve on the simple model fit to the data.
+
+```{r include=FALSE}
+
+# Test Model on Test Set
+
+```
+
+#### Regression Neural Network Model
+
+```{r include=FALSE}
+
+# Regression Neural Network Model
+
+## 
+```
+
+It would be interesting to fit a neural network to the data, merely to compare the results. I do not think doing so would be necessary as the simple linear regression model is already a great fit and and predictor of GDP as seen above. Also, time-constraints do not allow.
