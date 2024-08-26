@@ -1,6 +1,8 @@
 ---
 title: "ESD Data Science Graduate Programme Exercise"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Part One
@@ -75,7 +77,7 @@ The Summary Statistics Table of the data above shows that the errors and missing
 
 ### Time Series Visualisations
 
-```{r}
+```{r echo=FALSE}
 
 # Visualisations of the Data
 
@@ -179,11 +181,11 @@ modelsummary(SLR_Mod1, output = "markdown",
 
 If we fit a simple linear regression model to the data using all the explanatory variables, the table above gives the output of the model and we can infer certain things about both the data and the model. The regression coefficients tell us the impact of a unit change in the explanatory variables on the GDP. A unit change in the Government Expenditure results in a 0.476 change in the GDP. Alternatively, a unit change in the unemployment rate results in a 7227.716 change in the GDP. The R\^2 value informs us on how well the model predicts GDP in sample. At 99.8%, this suggests that the model is a great fit and the explanatory variables predict GDP well. The p-values suggest that some of the explanatory variables should not be included in the model, namely the Consumer Price Index. Step-wise Regression is implemented to determine the optimal number of explanatory variables to use in the model. Some of the variables might not have a great impact on improving the fit of the model to the data.
 
-```{r include=FALSE}
+```{r echo=FALSE}
 
 # Stepwise Regression to determine the necessary explanatory variables to use to predict GDP
 
-stepMod_SLR = step(SLR_Mod1, direction = "both", trace = 1)
+stepMod_SLR = step(SLR_Mod1, direction = "both", trace = 0)
 modelsummary(stepMod_SLR, output = "markdown",
              statistic = c("s.e. = {std.error}",
                            "p = {p.value}"))
@@ -194,6 +196,8 @@ Step-wise regression shows that one explanatory variable can be removed from the
 ```{r include=FALSE}
 
 # Test Model on Test Set
+
+pred = predict(SLR_Mod1, SLR_Data_Test)
 
 ```
 
